@@ -14,6 +14,14 @@ class FileOperator:
             ["Rower", 10, 2000],
             ["Telefon", 2, 1000],
             ["Chleb", 3, 10],
+            ["Karta1", 1, 100],
+            ["Rower1", 10, 2000],
+            ["Telefon1", 2, 1000],
+            ["Chleb1", 3, 10],
+            ["Karta2", 1, 100],
+            ["Rower2", 10, 2000],
+            ["Telefon2", 2, 1000],
+            ["Chleb2", 3, 10],
         ])
 
     def save(self):

@@ -17,7 +17,9 @@ dane.default()
 zocenami = mark(dane)
 
 ladny_print(zocenami)
-answer = greed(15, zocenami)
+
+answer = greed(11, zocenami)
+
 print("Wybrane opcje:")
 ladny_print(answer[1])
 print(f"Zużyto całą pulę ")\
