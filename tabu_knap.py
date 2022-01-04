@@ -2,12 +2,40 @@ import numpy as np
 import re
 import random
 from read_file import FileOperator
+import turtle
 
-LIVE = 13 #warunek stopu - ile iteracji wykona program
+screen = turtle.getscreen()
+turtley = turtle.Turtle()
+DIRECTION = 0
+LIVE = 40 #warunek stopu - ile iteracji wykona program
+
+def return_dir():
+    global DIRECTION
+    if DIRECTION == 1:
+        return "up"
+    if DIRECTION == 2:
+        return "down"
+
+def set_direction(old, new):
+    if new > old:
+        return 1 #jak wieksze to do góyry
+    else:
+        return 2
+
+def move_turtle():
+    global DIRECTION
+    if DIRECTION == 1:
+        turtley.down()
+        turtley.fd(10)
+        turtley.up()
+    else:
+        turtley.down()
+        turtley.bk(10)
+        turtley.up()
 
 def reset_live():#reset stopu
     global LIVE
-    LIVE = 13
+    LIVE = 40
 
 def return_min_waga(dane):
     min = 99
@@ -84,7 +112,8 @@ def WarunekWyrzucenia(tabu, waga, waga_max):#warunki są na zewnątrz głównej 
 
 
 def Tabu(init_sol, dane, waga_max):
-    przejscia_pasywne = 0#łapiemy pierwszy obiekt z listy wstępnej jako punkt startowy
+    global DIRECTION
+    przejscia_pasywne = 0 #łapiemy pierwszy obiekt z listy wstępnej jako punkt startowy
     check = 0
     najlepszy_obiekt = init_sol[0]
     najlepszy_kandydat = init_sol[0]
@@ -100,9 +129,14 @@ def Tabu(init_sol, dane, waga_max):
     #for _,y in enumerate(tabu_list):
         neighbours = sasiedzi(najlepszy_kandydat, pozycja, dane) #znajduje sąsiadów
         najlepszy_kandydat = dane[neighbours[0]] #łapię pierwszego lepszego jako kandydata
+        DIRECTION = 2 #startujemy w dół
         for kandydat in neighbours: #i szukam najlepszego kandydata
             if (not dane[kandydat] in tabu_list) and (fitness(najlepszy_kandydat, dane[kandydat], waga_max, waga)):
                 najlepszy_kandydat = dane[kandydat] #najlepszy kandydat do włożenia do plecaka
+                new_pozycja = zaznacz_pozycje(tabu_list, dane, sol = najlepszy_kandydat) #zaznaczam pozycje
+                DIRECTION = set_direction(pozycja, new_pozycja)
+                pozycja = new_pozycja
+                move_turtle()
         if  NowyNajlepszySimple(najlepszy_obiekt, najlepszy_kandydat): #sprawdzam, czy nowy kandydat nie jest może najlepszy
             najlepszy_obiekt = najlepszy_kandydat
         
@@ -110,13 +144,18 @@ def Tabu(init_sol, dane, waga_max):
             tabu_list.append(najlepszy_kandydat)#dodajemy najlepszego kandydata do plecaka
             waga += int(najlepszy_kandydat[1])#waga
             przejscia_pasywne = 0
+            print(return_dir())
         else: #mechanizm przesuwający wskaznik kolejnego kandydata na kolejny z listy init
             if przejscia_pasywne > 3: #jeśli wiecej niż 3 razy wykona się algorytm i nic do plecaka nie doda
                 check += 1
                 if check >= len(init_sol):
                     check = 0
                 najlepszy_kandydat = init_sol[check] #biorę następnego z listy wstępnej
-                pozycja = zaznacz_pozycje(tabu_list, dane, sol = najlepszy_kandydat)
+                new_pozycja = zaznacz_pozycje(tabu_list, dane, sol = najlepszy_kandydat)
+                DIRECTION = set_direction(pozycja, new_pozycja)
+                pozycja = new_pozycja
+                print(return_dir())
+                move_turtle()
             przejscia_pasywne += 1 #liczę przejscia bez dodawania do plecaka
 
         if WarunekWyrzucenia(tabu_list, waga, waga_max):
@@ -126,7 +165,9 @@ def Tabu(init_sol, dane, waga_max):
 
     print("Stop")
     print("Plecak: \n", tabu_list)
+    print()
     print("Najlepszy obiekt: \n",najlepszy_obiekt)
+    print("-------------------")
     reset_live()
     return najlepszy_obiekt
 
@@ -135,20 +176,21 @@ def main():
     dane = FileOperator("TabuKnapsack") #ładuje obiekt
     dane.default() #ładuje domyślne dane
     
-    waga_max = 16 #max waga plecaka, pamietać, żeby nie za mały min waga 2*ile_init-2 | >2
+    waga_max = 23 #max waga plecaka, pamietać, żeby nie za mały min waga 2*ile_init-2 | >2
     waga = 0 #startowa waga
 
     ile_init = 3 #ile przedmiotów sprawdzić
 
 
     lista = []
-    for _ in range(10): #10 razy algorytm
+    for _ in range(1): #10 razy algorytm
         init_solution, waga = random_init(waga_max, dane.get().tolist(), ile_init)#rozwiązanie wejściowe
         print("Rozwiązanie wstępne \n",init_solution)
         temp = Tabu(init_solution, dane.get().tolist(), waga_max)
         lista.append(temp)
     print("Najlepsze obiekty")
     print(lista)
+    input("Press any key...")
 
 if __name__ == "__main__":
     main()
